@@ -93,6 +93,8 @@ def solve(sequence,numObs,numStates):
     ranks = (id.max() - id ).reshape(sequence.shape)
     transition_matrix,emission_matrix=baum_welch(numStates,np.unique(sequence).size,sequence,ranks)
     return transition_matrix,emission_matrix
+
+
 if __name__=='__main__':
     sequences,finalVals=getSequences('/home/aditya/Desktop/Aditya/Statistical Methods ML/Project/test.csv')
     print solve(sequences[1],10,3)
