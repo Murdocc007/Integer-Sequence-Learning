@@ -12,9 +12,10 @@ import numpy as np
 def predict(q,p,pi,obs,ranks):
     maxStateVal=-1
     finalState=-1
-    finalval=-1
+    finalObsVal=-1
+    finalObs=-1
     n=q.shape[0] #number of states
-
+    nObs=p.shape[1]
 
 
     #getting the maximum probable state
@@ -26,28 +27,33 @@ def predict(q,p,pi,obs,ranks):
             maxStateVal=res
             finalState=state
 
+
     #getting the most probable value for the most probable state
-    for i in range(p.shape[1]):
-        if p[finalState,i]<finalval:
-            finalval=p[finalState,i]
-    return finalval
+    for i in range(nObs):
+        if p[finalState,i]>finalObsVal:
+            finalObsVal=p[finalState,i]
+            finalObs=i
+    return finalObs
 
 
 
 def prevProb(q,p,pi,state,obs,ranks):
     n=obs.size
-    denom=observProb(q,p,pi,n)
-    num=pi*np.diag(p[0,:])
+    num_states=q.shape[0]
+    denom=observProb(q,p,pi,obs,ranks)
+    num=pi.dot(np.diag(p[:,0]))
     for i in range(1,n-1):
-        num=num*(q*np.diag(p[:,i]))
-    num=(num*q[:,i])*p[state,ranks[obs[n-1]]]
+        num=num.dot((q.dot(np.diag(p[:,ranks[i]]))))
+    num=(num.dot(q[:,state].dot(p[state,ranks[n-1]])))
     return num/denom
 
-def observProb(q,p,pi,n):
-    res=pi*np.diag(p[0,:])
+def observProb(q,p,pi,obs,ranks):
+    n=obs.size
+    num_states=q.shape[0]
+    res=pi.dot(np.diag(p[:,ranks[obs[0]]]))
     for i in range(1,n):
-        res=res*(q*np.diag(p[:,i]))
-    res=res*ones(n)
+            res=res.dot((q.dot(np.diag(p[:,ranks[i]]))))
+    res=res.dot(np.ones(num_states))
     return res
 
 
@@ -101,6 +107,7 @@ def baum_welch( num_states, num_obs, observ,ranks ):
     O_mat = np.ones( (num_states, num_obs) )
     O_mat = O_mat / O_mat.sum(axis=1)[:,None]
     theta = np.zeros( (num_states, num_states, observ.size) )
+    P=np.ones(num_states) #initial probability distribution
     while True:
         old_A = A_mat
         old_O = O_mat
@@ -132,20 +139,37 @@ def baum_welch( num_states, num_obs, observ,ranks ):
         if np.linalg.norm(old_A-A_mat) < .00001 and np.linalg.norm(old_O-O_mat) < .00001:
             break
     # get out
-    return A_mat, O_mat
+    return A_mat, O_mat, P[:,0]
 
 def solve(sequence,numObs,numStates):
     sequence=sequence[-numObs:]
     sequence=np.array(sequence)
     _,id = np.unique(sequence,return_inverse=True)
     ranks = (id.max() - id ).reshape(sequence.shape)
-    transition_matrix,emission_matrix=baum_welch(numStates,np.unique(sequence).size,sequence,ranks)
-    return transition_matrix,emission_matrix
+    transition_matrix,emission_matrix,initializationMatrix=baum_welch(numStates,np.unique(sequence).size,sequence,ranks)
+
+    return predict(transition_matrix,emission_matrix,initializationMatrix,sequence,ranks)
 
 
 if __name__=='__main__':
     sequences,finalVals=getSequences('/home/aditya/Desktop/Aditya/Statistical Methods ML/Project/test.csv')
-    print solve(sequences[1],10,3)
+    lengthArray=[10,20,30]
+    hiddenStates=[3,4,5]
+    correct=0
+    n=len(sequences)
+    for i in range(1,n+1):
+        done=0
+        j=0
+        while j<3 and done==0:
+            k=0
+            while k<3:
+                if finalVals[i]==solve(sequences[i],lengthArray[j],hiddenStates[k]):
+                    correct+=1
+                k+=1
+            j+=1
+
+    print correct
+
 
 
 
