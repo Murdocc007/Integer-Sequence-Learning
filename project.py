@@ -41,7 +41,7 @@ def prevProb(q,p,pi,state,obs,ranks):
     n=obs.size
     num_states=q.shape[0]
     denom=observProb(q,p,pi,obs,ranks)
-    num=pi.dot(np.diag(p[:,0]))
+    num=pi.dot(np.diag(p[:,ranks[0]]))
     for i in range(1,n-1):
         num=num.dot((q.dot(np.diag(p[:,ranks[i]]))))
     num=(num.dot(q[:,state].dot(p[state,ranks[n-1]])))
@@ -50,7 +50,7 @@ def prevProb(q,p,pi,state,obs,ranks):
 def observProb(q,p,pi,obs,ranks):
     n=obs.size
     num_states=q.shape[0]
-    res=pi.dot(np.diag(p[:,ranks[obs[0]]]))
+    res=pi.dot(np.diag(p[:,ranks[0]]))
     for i in range(1,n):
             res=res.dot((q.dot(np.diag(p[:,ranks[i]]))))
     res=res.dot(np.ones(num_states))
@@ -163,8 +163,11 @@ if __name__=='__main__':
         while j<3 and done==0:
             k=0
             while k<3:
-                if finalVals[i]==solve(sequences[i],lengthArray[j],hiddenStates[k]):
-                    correct+=1
+                try:
+                    if finalVals[i]==solve(sequences[i],lengthArray[j],hiddenStates[k]):
+                        correct+=1
+                except:
+                    print k
                 k+=1
             j+=1
 
