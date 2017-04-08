@@ -157,19 +157,20 @@ if __name__=='__main__':
     hiddenStates=[3,4,5]
     correct=0
     n=len(sequences)
-    for i in range(1,n+1):
+    for val in sequences:
         done=0
         j=0
+        if len(sequences[val])==0:
+            continue
         while j<3 and done==0:
             k=0
             while k<3:
-                try:
-                    if finalVals[i]==solve(sequences[i],lengthArray[j],hiddenStates[k]):
-                        correct+=1
-                except:
-                    print k
+                if finalVals[val]==solve(sequences[val],lengthArray[j],hiddenStates[k]):
+                    correct+=1
                 k+=1
             j+=1
+        foo+=1
+
 
     print correct
 
