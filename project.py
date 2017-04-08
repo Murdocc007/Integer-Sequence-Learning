@@ -1,6 +1,54 @@
 from __future__ import division
 import numpy as np
-# functions and classes go here
+
+
+#q - transition matrix
+#p - emission probability
+#pi - initial probability
+#state - next hidden state
+#obs - observations observed so far
+#ranks - <observation, rank within the observation>
+# all are numpy matrices
+def predict(q,p,pi,obs,ranks):
+    maxStateVal=-1
+    finalState=-1
+    finalval=-1
+    n=q.shape[0] #number of states
+
+
+
+    #getting the maximum probable state
+    for state in range(n):
+        res=0
+        for i in range(n):
+            res+=q[i,state]*prevProb(q,p,pi,i,obs,ranks)
+        if res>maxStateVal:
+            maxStateVal=res
+            finalState=state
+
+    #getting the most probable value for the most probable state
+    for i in range(p.shape[1]):
+        if p[finalState,i]<finalval:
+            finalval=p[finalState,i]
+    return finalval
+
+
+
+def prevProb(q,p,pi,state,obs,ranks):
+    n=obs.size
+    denom=observProb(q,p,pi,n)
+    num=pi*np.diag(p[0,:])
+    for i in range(1,n-1):
+        num=num*(q*np.diag(p[:,i]))
+    num=(num*q[:,i])*p[state,ranks[obs[n-1]]]
+    return num/denom
+
+def observProb(q,p,pi,n):
+    res=pi*np.diag(p[0,:])
+    for i in range(1,n):
+        res=res*(q*np.diag(p[:,i]))
+    res=res*ones(n)
+    return res
 
 
 #extract all the sequences from the file and returns the sequence and the expected final value
