@@ -58,12 +58,13 @@ def observProb(q,p,pi,obs,ranks):
 
 
 #extract all the sequences from the file and returns the sequence and the expected final value
-def getSequences(filePath):
+def getSequences(filePath,numberOfIntSequence):
     testfile=filePath
     data = open(testfile).readlines()
     finalVal={} # (key,value)
     sequences={}   #(key, value) = (id , sequence)
-    for i in range(1,len(data)):
+    
+    for i in range(1,numberOfIntSequence):
         line=data[i]
         line =line.replace('"','')
         line = line[:-1].split(',')
@@ -152,7 +153,8 @@ def solve(sequence,numObs,numStates):
 
 
 if __name__=='__main__':
-    sequences,finalVals=getSequences('/home/aditya/Desktop/Aditya/Statistical Methods ML/Project/test.csv')
+    numberOfIntSequence = 500
+    sequences,finalVals=getSequences('./test.csv',numberOfIntSequence)
     lengthArray=[10,20,30]
     hiddenStates=[3,4,5]
     correct=0
@@ -166,14 +168,12 @@ if __name__=='__main__':
             k=0
             while k<3:
                 if finalVals[val]==solve(sequences[val],lengthArray[j],hiddenStates[k]):
-                    correct+=1
+                	correct+=1
                 k+=1
             j+=1
-        foo+=1
+        #foo+=1
 
 
-    print correct
-
-
-
-
+    print "Number of Input Integer Sequence:: " + str(numberOfIntSequence)
+    print "Number of Interger Sequence Predicted Correctly:: " + str(correct)
+    print "Accuracy:: "+ str(correct/numberOfIntSequence*100)
